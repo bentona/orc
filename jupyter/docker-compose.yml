@@ -4,14 +4,11 @@ services:
   jupyter:
     image: "jupyter/scipy-notebook"
     ports:
-      - "80:8888"
-    container_name: 'jupyter'
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`j.bentona.com`)"
-      - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=mytlschallenge"
+      - "8888:8888"
+    command: >
+      start-notebook.sh 
+      --NotebookApp.password='${JUPYTER_PASSWORD_HASHED}'
+      --NotebookApp.base_url='/j'
+    volumes:
+      - "/home/benton/notebooks:/home/jovyan/work"
 
-networks:
-  web:
-    external: true
