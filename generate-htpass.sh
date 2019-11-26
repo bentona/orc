@@ -1,3 +1,4 @@
+#!/bin/bash
 source .env
 
-htpasswd -n benton -c ./.htpassword/c.$DOMAIN
+htpasswd -c ./.htpassword/c.$DOMAIN benton
