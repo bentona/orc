@@ -38,6 +38,7 @@ services:
       - web
     volumes:
       - "/home/benton/nextcloud:/var/www/html"
+      - "${STORAGE_VOLUME}:/var/www/html/data"
     environment:
       VIRTUAL_HOST: "c.${DOMAIN}"
       VIRTUAL_PORT: 8080
