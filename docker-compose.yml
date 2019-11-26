@@ -32,6 +32,7 @@ services:
 
   nextcloud:
     image: nextcloud:latest
+    container_name: nextcloud
     ports:
       - "8080:80"
     networks:
