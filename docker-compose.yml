@@ -12,6 +12,9 @@ services:
       - /apps/docker-articles/nginx/vhost.d:/etc/nginx/vhost.d
       - /apps/docker-articles/nginx/certs:/etc/nginx/certs:ro
       - /apps/docker-articles/nginx/html:/usr/share/nginx/html
+    configs:
+      - source: proxy_config
+        target: /etc/nginx/proxy.conf
     networks:
       - web
     labels:
@@ -19,6 +22,8 @@ services:
 
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion:v1.12
+    depends_on:
+      - nginx-proxy
     environment:
       NGINX_PROXY_CONTAINER: nginx-web
     volumes:
@@ -27,18 +32,23 @@ services:
       - /apps/docker-articles/nginx/certs:/etc/nginx/certs:rw
       - /apps/docker-articles/nginx/html:/usr/share/nginx/html
 
-  owncloud:
-    image: owncloud:10.0.3
-    hostname: owncloud
+  nextcloud:
+    image: nextcloud:latest
     ports:
       - "8080:80"
     networks:
       - web
+    volumes:
+      - "/home/benton/nextcloud:/var/www/html"
     environment:
       VIRTUAL_HOST: "c.${DOMAIN}"
       VIRTUAL_PORT: 8080
       LETSENCRYPT_HOST: "c.${DOMAIN}"
       LETSENCRYPT_EMAIL: benton.anderson@gmail.com
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_HOST}
 
   jupyter:
     image: "jupyter/scipy-notebook"
@@ -56,6 +66,10 @@ services:
       VIRTUAL_PORT: 8888
       LETSENCRYPT_HOST: "j.${DOMAIN}"
       LETSENCRYPT_EMAIL: benton.anderson@gmail.com
+
+configs:
+  proxy_config:
+    file: ./proxy.conf
 
 networks:
   web:
