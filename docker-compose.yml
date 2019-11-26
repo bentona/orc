@@ -3,6 +3,7 @@ version: "3.3"
 services:
   nginx-proxy:
     image: jwilder/nginx-proxy
+    container_name: nginx-web
     ports:
       - "80:80"
       - "443:443"
@@ -18,6 +19,8 @@ services:
 
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion:v1.12
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /apps/docker-articles/nginx/vhost.d:/etc/nginx/vhost.d
