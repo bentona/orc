@@ -1,2 +1,2 @@
 source .env
-cp c.DOMAIN.conf c.$DOMAIN.conf
+cp c.DOMAIN.conf conf.d/c.$DOMAIN.conf
