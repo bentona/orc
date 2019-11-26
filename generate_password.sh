@@ -1,1 +1,0 @@
-htpasswd -n admin

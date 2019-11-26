@@ -1,30 +1,59 @@
 version: "3.3"
 
 services:
-  traefik:
-    image: "traefik:v2.0.5"
-    command:
-      - "--log.level=DEBUG"
-      - --entrypoints.web.address=:80
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      #- "--certificatesresolvers.mytlschallenge.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.mytlschallenge.acme.email=postmaster@mydomain.com"
-      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
-      - "--providers.docker=true"
+  nginx-proxy:
+    image: jwilder/nginx-proxy
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
-
-  whoami:
-    image: "containous/whoami"
-    container_name: "simple-service"
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /apps/docker-articles/nginx/vhost.d:/etc/nginx/vhost.d
+      - /apps/docker-articles/nginx/certs:/etc/nginx/certs:ro
+      - /apps/docker-articles/nginx/html:/usr/share/nginx/html
+    networks:
+      - web
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`who.bentona.com`)"
-      - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=mytlschallenge"
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion:v1.12
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /apps/docker-articles/nginx/vhost.d:/etc/nginx/vhost.d
+      - /apps/docker-articles/nginx/certs:/etc/nginx/certs:rw
+      - /apps/docker-articles/nginx/html:/usr/share/nginx/html
+
+  owncloud:
+    image: owncloud:10.0.3
+    hostname: owncloud
+    ports:
+      - "8080:80"
+    networks:
+      - web
+    environment:
+      VIRTUAL_HOST: "c.${DOMAIN}"
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: "c.${DOMAIN}"
+      LETSENCRYPT_EMAIL: benton.anderson@gmail.com
+
+  jupyter:
+    image: "jupyter/scipy-notebook"
+    ports:
+      - "8888:8888"
+    networks:
+      - web
+    command: >
+      start-notebook.sh
+      --NotebookApp.password='${JUPYTER_PASSWORD_HASHED}'
+    volumes:
+      - "/home/benton/notebooks:/home/jovyan/work"
+    environment:
+      VIRTUAL_HOST: "j.${DOMAIN}"
+      VIRTUAL_PORT: 8888
+      LETSENCRYPT_HOST: "j.${DOMAIN}"
+      LETSENCRYPT_EMAIL: benton.anderson@gmail.com
+
+networks:
+  web:
+
