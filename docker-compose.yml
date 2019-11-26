@@ -12,6 +12,7 @@ services:
       - /apps/docker-articles/nginx/vhost.d:/etc/nginx/vhost.d
       - /apps/docker-articles/nginx/certs:/etc/nginx/certs:ro
       - /apps/docker-articles/nginx/html:/usr/share/nginx/html
+      - ./.htpasswd:/etc/nginx/htpasswd
       - ./conf.d:/etc/nginx/conf.d
     networks:
       - web
