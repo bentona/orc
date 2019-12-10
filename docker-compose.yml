@@ -68,10 +68,30 @@ services:
       LETSENCRYPT_HOST: "j.${DOMAIN}"
       LETSENCRYPT_EMAIL: benton.anderson@gmail.com
 
+  airsonic:
+    user: "1000:1000" 
+    image: airsonic/airsonic
+    container_name: airsonic
+    networks:
+      - web
+    volumes:
+      - "${MEDIA_PATH}/music:/airsonic/music"
+      - "${MEDIA_PATH}/podcasts:/airsonic/podcasts"
+      - "${MEDIA_PATH}/playlists:/airsonic/playlists"
+      - "${STORAGE_VOLUME}/airsonic-data:/airsonic/data"  
+    ports:
+      - 4040:4040
+    environment:
+      VIRTUAL_HOST: "air.${DOMAIN}"
+      VIRTUAL_PORT: 4040
+      LETSENCRYPT_HOST: "air.${DOMAIN}"
+      LETSENCRYPT_EMAIL: benton.anderson@gmail.com
+      CONTEXT_PATH: '/'
+
+
 configs:
   proxy_config:
     file: ./proxy.conf
 
 networks:
   web:
-
